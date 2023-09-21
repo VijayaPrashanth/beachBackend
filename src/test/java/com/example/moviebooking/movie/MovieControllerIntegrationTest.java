@@ -1,25 +1,43 @@
 package com.example.moviebooking.movie;
 
 import com.example.moviebooking.movie.repository.Movie;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.example.moviebooking.movie.view.MovieController;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SpringBootTest
+@AutoConfigureMockMvc
 public class MovieControllerIntegrationTest {
 
-    @Autowired
+    @Mock
     private MovieService movieService;
+
+    @InjectMocks
+    private MovieController movieController;
 
     @Autowired
     private MockMvc mockMvc;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     public void shouldReturnAllMovies() throws Exception {
@@ -30,7 +48,10 @@ public class MovieControllerIntegrationTest {
         List<Movie> movieList = Arrays.asList(movie1,movie2,movie3);
         String response = new ObjectMapper().writeValueAsString(movieList);
 
+        //when(movieService.getMovieList()).thenReturn(movieList);
+
         mockMvc.perform(MockMvcRequestBuilders.get("/movies")
+                        .accept(MediaType.APPLICATION_JSON)
                 .content(response))
                 .andExpect(status().isOk());
     }
