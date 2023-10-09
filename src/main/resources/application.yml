@@ -6,6 +6,11 @@ spring:
     url: jdbc:postgresql://localhost:5436/moviebooking
     username: moviebooking
     password: beach
+  main:
+    banner-mode: off
+  output:
+    ansi:
+      enabled: ALWAYS
   logging:
     level:
       org.springframework.security: DEBUG

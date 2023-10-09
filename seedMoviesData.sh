@@ -1,3 +1,5 @@
+MOVIE_IDS=('m101' 'm102' 'm103' 'm104' 'm105' 'm106' 'm107' 'm108' 'm109' 'm110' 'm111' 'm112' 'm113' 'm114' 'm115')
+
 seed_movie_details(){
 
   PGPASSWORD='beach' psql -h localhost -U moviebooking -d moviebooking -p '5436' -qc\
