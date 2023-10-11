@@ -1,4 +1,7 @@
+#!/bin/bash
 MOVIE_IDS=('m101' 'm102' 'm103' 'm104' 'm105' 'm106' 'm107' 'm108' 'm109' 'm110' 'm111' 'm112' 'm113' 'm114' 'm115')
+
+OS_TYPE=$(uname -s)
 
 seed_movie_details(){
 
@@ -23,4 +26,112 @@ seed_movie_details(){
 echo "movie details seeded successfully"
 }
 
+get_slot_ids_from_db () {
+  slot_ids=($(PGPASSWORD='beach' psql -h localhost -U moviebooking -d moviebooking -p '5436' -qtc "select id from slot"))
+}
+
+clear_old_data () {
+  echo "Truncating the following tables in database: movie, show, slot..."
+
+  PGPASSWORD='beach' psql -h localhost -U moviebooking -d moviebooking -p '5436' -qc "truncate movie, show, slot";
+
+  echo "Tables successfully truncated!"
+}
+
+seed_slot_data () {
+  echo "Seeding slot data in database..."
+
+  PGPASSWORD='beach' psql -h localhost -U moviebooking -d moviebooking -p '5436' -qc \
+  "insert into slot (name, start_time, end_time) values \
+  ('slot1', '09:00:00', '12:30:00'), \
+  ('slot2', '13:30:00', '17:00:00'), \
+  ('slot3', '18:00:00', '21:30:00'), \
+  ('slot4', '22:30:00', '02:00:00')";
+
+  echo "Slot data successfully seeded!"
+}
+
+get_random_movie_id(){
+
+  lower_index=0
+  upper_index=$(( ${#MOVIE_IDS[@]} - 1))
+
+  echo ${MOVIE_IDS[$(( $RANDOM % (( $upper_index - $lower_index + 1 )) + $lower_index ))]}
+}
+
+get_price(){
+  lower_price=150
+  higher_price=300
+
+  echo $(( $RANDOM % (( $higher_price - $lower_price + 1)) + $lower_price )).$(( RANDOM % 99))
+}
+
+initialise_dates () {
+  if [ "$OS_TYPE" == "Darwin" ]
+  then
+    start_date=$(date -j -f %Y-%m-%d $1 +%Y-%m-%d)
+  else
+    start_date=$(date --date "$1" "+%Y-%m-%d")
+  fi
+  next_date=${start_date}
+}
+
+get_next_date () {
+  if [ "$OS_TYPE" == "Darwin" ]
+  then
+    next_date_command="date -j -f %Y-%m-%d -v+1d $1 +%Y-%m-%d"
+  else
+    next_date_command="date --date \"$1 +1 day\" \"+%Y-%m-%d\""
+  fi
+  echo $(eval $next_date_command)
+}
+
+seed_data_for_first_day(){
+  for ((slot_id = ${slot_ids[0]}; slot_id <= ${slot_ids[ ${#slot_ids[@]} - 1 ]}; slot_id++));
+  do
+    movie_id=$(get_random_movie_id)
+    price=$(get_price)
+
+    PGPASSWORD='beach' psql -h localhost -U 'moviebooking' -d 'moviebooking' -p '5436' -qc \
+    "insert into show(movie_id,date,slot_id,cost) values ('$movie_id','${start_date}','$slot_id','$price')"
+  done
+}
+
+seed_data_from_second_day_onwards () {
+  next_date=$( get_next_date "$start_date" )
+  for ((day = 2; day <= $1; day++));
+  do
+    for ((slot_id = ${slot_ids[0]}; slot_id <= ${slot_ids[ ${#slot_ids[@]} - 1 ]}; slot_id++));
+    do
+      movie_id=$( get_random_movie_id )
+      price=$( get_price )
+      PGPASSWORD='beach' psql -h localhost -U moviebooking -d moviebooking -p '5436' -qc \
+      "insert into show (movie_id, date, slot_id, cost) values ('$movie_id', '$next_date', $slot_id, $price)"
+    done
+    next_date=$( get_next_date "$next_date" )
+  done
+}
+
+number_of_weeks=$2
+
+seed_shows(){
+
+  echo "seeding shows data"
+
+  number_of_days=$(( ${number_of_weeks} * 7 ))
+  get_slot_ids_from_db
+
+  if [ $number_of_days -ne 0 ]
+  then
+    seed_data_for_first_day
+    seed_data_from_second_day_onwards "$number_of_days"
+  fi
+
+  echo "Show data successfully seeded!"
+}
+
+initialise_dates "$1"
+clear_old_data
 seed_movie_details
+seed_slot_data
+seed_shows
