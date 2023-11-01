@@ -3,6 +3,7 @@ package com.example.moviebooking.user.view;
 import com.example.moviebooking.user.UserService;
 import com.example.moviebooking.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +21,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/login")
     Map<String, Object> login(Principal principal) {
         String username = principal.getName();

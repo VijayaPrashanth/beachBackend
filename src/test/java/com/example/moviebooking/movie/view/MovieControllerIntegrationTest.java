@@ -1,5 +1,6 @@
-package com.example.moviebooking.movie;
+package com.example.moviebooking.movie.view;
 
+import com.example.moviebooking.movie.MovieService;
 import com.example.moviebooking.movie.repository.Movie;
 import com.example.moviebooking.movie.view.MovieController;
 import com.fasterxml.jackson.databind.ObjectMapper;

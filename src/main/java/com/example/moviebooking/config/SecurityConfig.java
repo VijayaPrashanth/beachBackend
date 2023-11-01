@@ -33,8 +33,11 @@ public class SecurityConfig{
     }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests((requests)->requests.requestMatchers(HttpMethod.GET,"/movies").permitAll()
+        httpSecurity.authorizeHttpRequests((requests)->requests
                 .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/movies").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/signup/*").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/signup").permitAll()
                 .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults());
