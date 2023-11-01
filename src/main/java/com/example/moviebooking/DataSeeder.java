@@ -18,7 +18,7 @@ public class DataSeeder{
     CommandLineRunner initDatabase(UserRepository userRepository) {
         return args -> {
           if(userRepository.findByUsername("vijay_user").isEmpty()) {
-              userRepository.save(new User("vijay_user", passwordEncoder.encode("Principal123$")));
+              userRepository.save(new User("vijay_user", passwordEncoder.encode("Principal123$"),"admin"));
           }
         };
     }
